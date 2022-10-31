@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Pessoa {
+  id       Int        @id @default(autoincrement())
+  nome     String
+  email    String     @unique
+  codNac   String
+  telefone Telefone[]
+  endereco Endereco[]
+  tipo     String?
+  funcao   String?
+  servicos Servico[]
+}
+
+model Telefone {
+  numero   String @unique
+  pessoa   Pessoa @relation(fields: [pessoaId], references: [id])
+  pessoaId Int
+}
+
+model Endereco {
+  id          Int     @id @default(autoincrement())
+  logradouro  String
+  numero      String
+  complemento String?
+  bairro      String
+  cep         String
+  pessoa      Pessoa  @relation(fields: [pessoaId], references: [id])
+  pessoaId    Int
+  cidade      Cidade  @relation(fields: [cidadeId], references: [id])
+  cidadeId    Int
+}
+
+model Cidade {
+  id       Int        @id @default(autoincrement())
+  nome     String     @unique
+  Endereco Endereco[]
+  estado   Estado     @relation(fields: [estadoId], references: [id])
+  estadoId Int
+}
+
+model Estado {
+  id      Int      @id @default(autoincrement())
+  nome    String   @unique
+  cidades Cidade[]
+}
+
+model Pet {
+  id        Int     @id @default(autoincrement())
+  nome      String
+  idade     Int
+  especie   Especie @relation(fields: [especieId], references: [id])
+  especieId Int
+  raca      Raca    @relation(fields: [racaId], references: [id])
+  racaId    Int
+}
+
+model Especie {
+  id        Int    @id @default(autoincrement())
+  descricao String
+  pet       Pet[]
+}
+
+model Raca {
+  id        Int    @id @default(autoincrement())
+  descricao String
+  pet       Pet[]
+}
+
+model Produto {
+  id         Int                   @id @default(autoincrement())
+  nome       String
+  preco      Float
+  categorias CategoriasNoProduto[]
+}
+
+model Categoria {
+  id       Int                   @id @default(autoincrement())
+  nome     String                @unique
+  produtos CategoriasNoProduto[]
+}
+
+model CategoriasNoProduto {
+  Produto     Produto   @relation(fields: [produtoId], references: [id])
+  produtoId   Int
+  Categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  categoriaId Int
+
+  @@id([produtoId, categoriaId])
+}
+
+model Servico {
+  id          Int      @id @default(autoincrement())
+  dataEntrada DateTime
+  dataSaida   DateTime
+  descricao   String
+  cliente     Pessoa   @relation(fields: [clienteId], references: [id])
+  clienteId   Int
+}
