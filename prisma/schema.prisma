@@ -8,15 +8,28 @@ datasource db {
 }
 
 model Pessoa {
-  id       Int        @id @default(autoincrement())
-  nome     String
-  email    String     @unique
-  codNac   String
-  telefone Telefone[]
-  endereco Endereco[]
-  tipo     String?
-  funcao   String?
+  id          Int          @id @default(autoincrement())
+  nome        String
+  email       String       @unique
+  codNac      String
+  telefone    Telefone[]
+  endereco    Endereco[]
+  cliente     Cliente?
+  funcionario Funcionario?
+}
+
+model Cliente {
+  tipo     String
   servicos Servico[]
+  pessoa   Pessoa    @relation(fields: [pessoaId], references: [id])
+  pessoaId Int       @unique
+}
+
+model Funcionario {
+  funcao   String
+  Servico  Servico[]
+  pessoa   Pessoa    @relation(fields: [pessoaId], references: [id])
+  pessoaId Int       @unique
 }
 
 model Telefone {
@@ -53,13 +66,14 @@ model Estado {
 }
 
 model Pet {
-  id        Int     @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   nome      String
   idade     Int
-  especie   Especie @relation(fields: [especieId], references: [id])
+  especie   Especie   @relation(fields: [especieId], references: [id])
   especieId Int
-  raca      Raca    @relation(fields: [racaId], references: [id])
+  raca      Raca      @relation(fields: [racaId], references: [id])
   racaId    Int
+  servicos  Servico[]
 }
 
 model Especie {
@@ -96,11 +110,42 @@ model CategoriasNoProduto {
   @@id([produtoId, categoriaId])
 }
 
+enum SituacaoPagamento {
+  pago
+  pendente
+}
+
+model Pagamento {
+  id          Int               @id @default(autoincrement())
+  situacao    SituacaoPagamento
+  pagDinheiro PagDinheiro?
+  pagCartao   PagCartao?
+  Servico     Servico?
+}
+
+model PagDinheiro {
+  dataVencimento DateTime
+  dataPagamento  DateTime
+  pagamento      Pagamento @relation(fields: [pagamentoId], references: [id])
+  pagamentoId    Int       @unique
+}
+
+model PagCartao {
+  parcelas    Int
+  pagamento   Pagamento @relation(fields: [pagamentoId], references: [id])
+  pagamentoId Int       @unique
+}
+
 model Servico {
-  id          Int      @id @default(autoincrement())
-  dataEntrada DateTime
-  dataSaida   DateTime
-  descricao   String
-  cliente     Pessoa   @relation(fields: [clienteId], references: [id])
-  clienteId   Int
+  id            Int         @id @default(autoincrement())
+  dataEntrada   DateTime
+  dataSaida     DateTime
+  descricao     String
+  funcionario   Funcionario @relation(fields: [funcionarioId], references: [pessoaId])
+  funcionarioId Int
+  cliente       Cliente     @relation(fields: [clienteId], references: [pessoaId])
+  clienteId     Int
+  pagamento     Pagamento   @relation(fields: [pagamentoId], references: [id])
+  pagamentoId   Int         @unique
+  pets          Pet[]
 }
