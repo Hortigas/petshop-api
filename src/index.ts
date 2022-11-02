@@ -1,16 +1,34 @@
 import { PrismaClient } from '@prisma/client';
+import bodyParser from 'body-parser';
 import express from 'express';
 
 const prisma = new PrismaClient();
 const app = express();
 
-// app.get('/feed', async (req, res) => {
-//     const posts = await prisma.post.findMany({
-//         where: { published: true },
-//         include: { author: true },
-//     });
-//     res.json(posts);
-// });
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+app.route('/:estado/cidade')
+    .get(async (req, res) => {
+        const estado = req.params.estado;
+        const cidades = await prisma.cidade.findMany({ where: { estado: { nome: estado } } });
+        res.json(cidades);
+    })
+    .post(async (req, res) => {
+        try {
+            const estadoName = req.params.estado;
+            const estado = await prisma.estado.findUnique({ where: { nome: estadoName } });
+            if (!estado) throw new Error('estado não encontrado');
+            const { nome } = req.body as { nome: string; };
+            await prisma.cidade.create({ data: { nome: nome, estadoId: estado.id } });
+            res.json({ status: 'ok' });
+        } catch (err: any) {
+            res.json({ error: err.message });
+        }
+    })
+    .put(async (req, res) => {
+
+    });
 
 // app.post('/post', async (req, res) => {
 //     const { title, content, authorEmail } = req.body;

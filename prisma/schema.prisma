@@ -93,6 +93,7 @@ model Produto {
   nome       String
   preco      Float
   categorias CategoriasNoProduto[]
+  Servico    Servico[]
 }
 
 model Categoria {
@@ -148,4 +149,5 @@ model Servico {
   pagamento     Pagamento   @relation(fields: [pagamentoId], references: [id])
   pagamentoId   Int         @unique
   pets          Pet[]
+  produtos      Produto[]
 }
