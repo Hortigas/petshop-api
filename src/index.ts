@@ -36,19 +36,28 @@ app.route('/:estado/cidades')
 
     });
 
-app.get('/estados', async (req, res) => {
-    const rawEstados = await prisma.estado.findMany();
-    const estados = rawEstados.map((estado) => estado.nome);
-    res.json(estados);
-});
-
-app.post('/estados', async (req, res) => {
+app.route('/estados')
+    .get(async (req, res) => {
+        const rawEstados = await prisma.estado.findMany();
+        const estados = rawEstados.map((estado) => estado.nome);
+        res.json(estados);
+    })
+    .post(async (req, res) => {
+        try {
+            const estado = req.body.estado;
+            await prisma.estado.create({ data: { nome: estado } });
+            res.status(201).send();
+        } catch (err) {
+            res.status(400).send('Estado já existe');
+        }
+    });
+app.delete('/estados/:id', async (req, res) => {
     try {
-        const estado = req.body.estado;
-        await prisma.estado.create({ data: { nome: estado } });
-        res.status(201).send();
+        const id = Number(req.params.id);
+        await prisma.estado.delete({ where: { id } });
+        res.status(200).send();
     } catch (err) {
-        res.status(400).send('Estado já existe');
+        res.status(400).send('Estado não existe');
     }
 });
 
